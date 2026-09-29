@@ -32,3 +32,17 @@
 - Lärdom: OUI (de tre första byten i MAC-adressen) avslöjar tillverkaren. 08:00:27 = VirtualBox virtuella nätverkskort. Lokalt administrerade adresser är tilldelade av mjukvara.
 - Lärdom: IPv6 link-local-adressen byggs av MAC-adressen (EUI-64), vilket läcker hårdvaruidentitet.
 - Arbetssätt: avvikelse → hypotes → verifiering med flera oberoende källor → slutsats.
+
+## 2026-09-30 – Steg 4: DNS – uppslagningar från Kali
+- Kalis DNS-server är 172.20.10.1 (utdelad av DHCP, vidarebefordrad från Macens nätverk av VirtualBox). Stängde av servern med sudo poweroff för att spara minne.
+- Fångade två uppslagningar med dig på eth0: example.com och finnsinte.example. Fångsten sparades som ~/fangster/steg4-dns.pcapng på Kali (publiceras inte).
+- Första fångsten saknade DNS-paket: dig hade körts utanför fångstfönstret och i flera terminaler. Felsökte, stängde överflödiga terminaler och Wireshark-instanser (jobs, kill %1) och gjorde om fångsten.
+- DNS gick okrypterat över UDP port 53 via gatewayen (Ethernet-destination 52:54:00:12:35:00, NAT-motorn). Den som ser trafiken ser vilka namn som slås upp.
+- Kopplade verktyg och paket: dig visade id 3573, Wireshark 0x0df5, samma värde i hex.
+- Slumpad källport (38306) och transaktions-ID skyddar mot DNS cache poisoning: ett falskt svar måste gissa båda.
+- example.com: två A-poster, 104.20.23.154 och 172.66.147.243 (redundans och lastbalansering), TTL 313 s. Avkodade svaret för hand ur hex (c0 0c = namnpekare, typ A, klass IN, TTL 0x139, 4 byte adress).
+- Flaggor 0x8180: svar, ej authoritative, recursion desired och available. 172.20.10.1 är en rekursiv resolver, inte ägare av namnet.
+- finnsinte.example: NXDOMAIN med SOA från rotservrarna. .example är en reserverad toppdomän.
+- Verifierade med whois att 104.20.23.154 tillhör Cloudflare, Inc. (104.16.0.0/12). IP-adresser hos CDN säger lite om vem som ligger bakom tjänsten.
+- SOC-koppling: många NXDOMAIN från en värd kan tyda på skadlig kod som provar slumpade domäner (DGA). Låga TTL kan användas för snabbt byte av IP (fast flux).
+- Lärdom: en tom filtrering betyder inte att filtret är fel, utan att inget matchar. Felsök uppifrån: körde kommandot, vart gick trafiken, fångade jag vid rätt tid och på rätt gränssnitt?

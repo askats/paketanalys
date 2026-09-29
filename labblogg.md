@@ -8,3 +8,5 @@
 - Varför: fångstfiler kan innehålla känsliga uppgifter och övningsfilerna innehåller skadligt material. Sådant ska aldrig hamna i ett publikt repo av misstag.
 - Lärdom: ls -la visar dolda filer (punkt först) och filbehörigheter, ett grundkommando vid undersökningar eftersom angripare ofta gömmer filer så.
 - Lärdom: säkerhet börjar i dokumentationen, och det är lättare att förhindra en läcka än att städa upp efteråt (en pushad fil finns kvar i Git-historiken).
+
+- Felsökning: repot fick av misstag namnet Paketanalys och GitHub varnade för omdirigering vid push. Döpte om till paketanalys och uppdaterade adressen med git remote set-url. Lärdom: remote-adressen ska peka exakt rätt, inte via en omväg.
